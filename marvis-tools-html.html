@@ -67,7 +67,7 @@
       <div class="card">
         <h3>mouse-format-lite</h3>
         <div class="repo">github.com/laihainb666/mouse-format-lite</div>
-        <p>离线文件格式转换：图片 / PDF / 音视频 / Office 互转，CLI + WebUI。借鉴 <code>flyingmouse-format</code>（飞鼠格式）思路，内嵌 imageio-ffmpeg 无需系统 FFmpeg。</p>
+        <p>离线文件格式转换：图片 / 文本 / 电子书 / Office / PDF / 音视频 / ZIP 互转，CLI + WebUI，格式覆盖尽量对齐飞鼠格式。借鉴 <code>flyingmouse-format</code>（飞鼠格式）思路，内嵌 imageio-ffmpeg 无需系统 FFmpeg。</p>
         <p style="margin-top:8px">使用：<code>python3 convert.py a.png --to jpg</code> 或 <code>python3 webui.py</code></p>
       </div>
     </div>
@@ -86,7 +86,9 @@
         <option value="image/png">PNG</option>
         <option value="image/jpeg" selected>JPG</option>
         <option value="image/webp">WEBP</option>
+        <option value="image/avif">AVIF</option>
         <option value="image/bmp">BMP</option>
+        <option value="image/gif">GIF</option>
       </select>
       <select id="quality">
         <option value="0.95">质量 95</option>
