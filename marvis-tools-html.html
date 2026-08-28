@@ -84,19 +84,31 @@
 
   <!-- 项目介绍 -->
   <div class="section">
-    <h2><span class="t">📦</span> 两个复刻项目</h2>
+    <h2><span class="t">📦</span> 复刻项目（HTML 版 + Shell 版双版本）</h2>
     <div class="grid2">
       <div class="card">
-        <h3>bluetooth-link</h3>
-        <div class="repo">github.com/laihainb666/bluetooth-link</div>
-        <p>无网络蓝牙离线通讯：纯 Python 标准库，Linux RFCOMM 点对点直连，文本 + 文件传输。借鉴 <code>Kabootar</code> / <code>Chat-app-using-Bluetooth</code> / <code>PhoneLink</code> 思路。</p>
-        <p style="margin-top:8px">使用：<code>python3 bluetooth_link.py server</code> / <code>client &lt;对方MAC&gt;</code></p>
+        <h3>mouse-format-lite（HTML 版）</h3>
+        <div class="repo">github.com/laihainb666/mouse-format-lite</div>
+        <p>离线万能格式转换：图片 / 文本 / 电子书 / Office / PDF / 音视频 / ZIP 互转，本页即其网页版前端，图片本地零上传、其余格式走云端转换服务。借鉴 <code>flyingmouse-format</code>（飞鼠格式）思路。</p>
+        <p style="margin-top:8px">使用：<code>python3 convert.py a.png --to jpg</code> 或 <code>python3 webui.py</code></p>
       </div>
       <div class="card">
-        <h3>mouse-format-lite</h3>
-        <div class="repo">github.com/laihainb666/mouse-format-lite</div>
-        <p>离线文件格式转换：图片 / 文本 / 电子书 / Office / PDF / 音视频 / ZIP 互转，CLI + WebUI，格式覆盖尽量对齐飞鼠格式。借鉴 <code>flyingmouse-format</code>（飞鼠格式）思路，内嵌 imageio-ffmpeg 无需系统 FFmpeg。</p>
-        <p style="margin-top:8px">使用：<code>python3 convert.py a.png --to jpg</code> 或 <code>python3 webui.py</code></p>
+        <h3>mouse-format.sh（Shell 版）</h3>
+        <div class="repo">github.com/laihainb666/marvis-tools-html</div>
+        <p>与 HTML 版同能力的命令行版本：ffmpeg 直转图片/音视频，自动定位系统 ffmpeg 或 imageio-ffmpeg 内置静态二进制；文档 / PDF / 电子书 / ZIP 由 Python 核心兜底，另带 <code>web</code> 与 <code>doctor</code> 子命令。</p>
+        <p style="margin-top:8px">使用：<code>./mouse-format.sh a.png --to webp</code> 或 <code>./mouse-format.sh web</code></p>
+      </div>
+      <div class="card">
+        <h3>bluetooth-link + encrypt-chat</h3>
+        <div class="repo">github.com/laihainb666/bluetooth-link</div>
+        <p>无网络蓝牙离线通讯（RFCOMM 点对点），并附带<b>加密通道对话 encrypt_chat</b>：有网络走 TCP 在线加密通道、无网络走蓝牙离线加密通道，口令经 scrypt 派生密钥、每条消息 AES-GCM 加密防窃听篡改。</p>
+        <p style="margin-top:8px">使用：<code>python3 encrypt_chat.py listen --key 口令</code> / <code>chat --host IP --key 口令</code></p>
+      </div>
+      <div class="card">
+        <h3>工具包总览</h3>
+        <div class="repo">github.com/laihainb666/marvis-tools-html</div>
+        <p>本页 + <code>mouse-format.sh</code> + 加密通道对话（<code>encrypt_chat.py</code>）均发布在 marvis-tools-html 仓库；bluetooth-link 仓库同步收录 <code>encrypt_chat.py</code>。全部离线可用，不依赖第三方在线服务。</p>
+        <p style="margin-top:8px">下载：<a href="https://github.com/laihainb666/marvis-tools-html" target="_blank">marvis-tools-html</a></p>
       </div>
     </div>
   </div>
@@ -124,8 +136,8 @@
       <div class="card">
         <h3>完整体验地址</h3>
         <p>在线转换服务（全部格式可用，网页版即本页工具的后端）：</p>
-        <a class="big-link" href="https://ywfdn-81-69-228-18.run.pinggy-free.link" target="_blank">https://ywfdn-81-69-228-18.run.pinggy-free.link</a>
-        <p style="margin-top:10px">打开后即可体验图片 / PDF / Office / 文本 / 电子书 / ZIP / 音视频全部格式互转；首次访问如出现 pinggy 提示页，点击 <code>Enter site</code> 即可进入。该地址为云端演示实例，若失效可在本地运行 <code>python3 webui.py</code> 自行启动服务。</p>
+        <a class="big-link" href="https://uuvlr-42-192-210-72.run.pinggy-free.link" target="_blank">https://uuvlr-42-192-210-72.run.pinggy-free.link</a>
+        <p style="margin-top:10px">打开后即可体验图片 / PDF / Office / 文本 / 电子书 / ZIP / 音视频全部格式互转；首次访问如出现 pinggy 提示页，点击 <code>Enter site</code> 即可进入。该地址为云端演示实例（60 分钟免费隧道），若失效可在本地运行 <code>./mouse-format.sh web</code> 或 <code>python3 webui.py</code> 自行启动服务。</p>
       </div>
     </div>
   </div>
@@ -142,25 +154,26 @@
   let files=[];
 
   // 云端服务地址：页面本身从隧道打开则同源，否则用默认公网演示地址
-  const DEFAULT_API = location.hostname.indexOf('pinggy-free.link')>=0 ? '' : 'https://ywfdn-81-69-228-18.run.pinggy-free.link';
+  const DEFAULT_API = location.hostname.indexOf('pinggy-free.link')>=0 ? '' : 'https://uuvlr-42-192-210-72.run.pinggy-free.link';
   apiInput.value = DEFAULT_API;
   function apiBase(){ return apiInput.value.trim().replace(/\/+$/,''); }
 
-  // 格式映射（对齐 mouse-format-lite 后端能力）
+  // 格式映射（对齐 mouse-format-lite 后端全部能力）
   const FORMATS = {
-    image: { local:['jpg','png','webp','avif','bmp','gif'], remote:['pdf','zip','ico','tiff'] },
+    image: { local:['jpg','png','webp','bmp','gif'], remote:['pdf','zip','ico','tiff','tga','avif'] },
     video: { remote:['gif','mp3','wav','flac','m4a','aac','ogg','opus','wma'] },
     audio: { remote:['mp3','wav','flac','m4a','aac','ogg','opus','wma'] },
     pdf:   { remote:['txt','docx','xlsx','html','png','jpg','jpeg','webp','bmp','split'] },
     text:  { remote:['md','txt','html','pdf','docx','epub'] },
     ebook: { remote:['txt','md'] },
-    doc:   { remote:['md','txt','html','pdf'] },
-    xls:   { remote:['csv','md','txt','html','pdf'] },
-    ppt:   { remote:['md','txt','html','pdf'] },
+    doc:   { remote:['md','txt','html','pdf','docx'] },
+    xls:   { remote:['csv','md','txt','html','pdf','xlsx'] },
+    ppt:   { remote:['md','txt','html','pdf','pptx'] },
+    legacy:{ remote:['docx','xlsx','pptx','md','txt','pdf'] },
     zip:   { remote:['pdf'] },
     other: { remote:['zip'] }
   };
-  const TYPE_NAME = { image:'图片', video:'视频', audio:'音频', pdf:'PDF', text:'文本', ebook:'电子书', doc:'Word', xls:'Excel', ppt:'PPT', zip:'ZIP', other:'文件' };
+  const TYPE_NAME = { image:'图片', video:'视频', audio:'音频', pdf:'PDF', text:'文本', ebook:'电子书', doc:'Word', xls:'Excel', ppt:'PPT', legacy:'旧版Office', zip:'ZIP', other:'文件' };
 
   function detectType(name){
     const ext=name.split('.').pop().toLowerCase();
@@ -173,6 +186,7 @@
     if(ext==='docx') return 'doc';
     if(/^(xlsx|xlsm)$/.test(ext)) return 'xls';
     if(ext==='pptx') return 'ppt';
+    if(/^(doc|odt|rtf|xls|ods|ppt|odp)$/.test(ext)) return 'legacy';
     if(ext==='zip') return 'zip';
     return 'other';
   }
