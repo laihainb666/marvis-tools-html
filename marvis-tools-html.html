@@ -25,6 +25,12 @@
   .card .repo { font-size:12px; color:#64748b; margin-bottom:8px; }
   .card a { color:#6ee7ff; text-decoration:none; }
   .card a:hover { text-decoration:underline; }
+  .link-line { margin:6px 0; font-size:13px; word-break:break-all; }
+  .link-line b { color:#a78bfa; font-weight:600; }
+  .link-line a { color:#6ee7ff; text-decoration:none; }
+  .link-line a:hover { text-decoration:underline; }
+  .big-link { display:inline-block; margin-top:10px; padding:12px 22px; border-radius:12px; background:linear-gradient(90deg,#0ea5e9,#8b5cf6); color:#fff; font-weight:700; text-decoration:none; font-size:14px; }
+  .big-link:hover { filter:brightness(1.15); }
   /* 转换工具区 */
   .tool { text-align:center; }
   .drop { border:2px dashed rgba(110,231,255,.35); border-radius:14px; padding:36px 20px; cursor:pointer; transition:.2s; }
@@ -32,7 +38,8 @@
   .drop .big { font-size:15px; color:#e7ecf5; margin-bottom:6px; }
   .drop .small { font-size:12px; color:#64748b; }
   .row { display:flex; align-items:center; justify-content:center; gap:14px; margin-top:18px; flex-wrap:wrap; }
-  select, button { font-family:inherit; font-size:14px; border-radius:10px; padding:10px 16px; border:1px solid rgba(255,255,255,.15); background:#1e293b; color:#e7ecf5; cursor:pointer; }
+  select, button, input[type=text] { font-family:inherit; font-size:14px; border-radius:10px; padding:10px 16px; border:1px solid rgba(255,255,255,.15); background:#1e293b; color:#e7ecf5; cursor:pointer; }
+  input[type=text] { cursor:text; width:300px; }
   button { background:linear-gradient(90deg,#0ea5e9,#8b5cf6); border:none; font-weight:700; color:#fff; }
   button:disabled { opacity:.4; cursor:not-allowed; }
   .preview { margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
@@ -51,8 +58,29 @@
   <header>
     <div class="badge">MARVIS 复刻工具包 · HTML 版</div>
     <h1>浏览器直接可用的工具页</h1>
-    <p class="sub">图片格式互转在浏览器本地完成 · 文件不上传服务器 · 已同步发布 GitHub</p>
+    <p class="sub">网页版格式转换 · 支持全部格式 · 图片类本地零上传 · 已同步发布 GitHub</p>
   </header>
+
+  <!-- 在线转换工具 -->
+  <div class="section tool">
+    <h2><span class="t">🔄</span> 网页版格式转换（全格式）</h2>
+    <div class="drop" id="drop">
+      <div class="big">拖拽文件到这里，或点击选择文件</div>
+      <div class="small" id="dropHint">支持图片 / 文本 / 电子书 / Office / PDF / 音视频 / ZIP 等</div>
+    </div>
+    <input type="file" id="file" multiple hidden>
+    <div class="row">
+      <select id="fmt"></select>
+      <button id="go" disabled>开始转换</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <span style="font-size:12px;color:#8b93a7">云端服务地址：</span>
+      <input type="text" id="apiBase" placeholder="https://…">
+    </div>
+    <div class="status" id="status">等待选择文件…</div>
+    <div class="preview" id="preview"></div>
+    <p class="note" id="noteLine">说明：图片互转（jpg/png/webp/avif/bmp/gif）在浏览器本地完成，文件不上传；PDF / Office / 文本 / 电子书 / ZIP / 音视频等转换由下方云端转换服务完成。一次处理一个文件，多文件合并请使用页面最下方的完整体验地址。</p>
+  </div>
 
   <!-- 项目介绍 -->
   <div class="section">
@@ -73,56 +101,81 @@
     </div>
   </div>
 
-  <!-- 在线转换工具 -->
-  <div class="section tool">
-    <h2><span class="t">🖼️</span> 网页版图片格式互转（纯前端）</h2>
-    <div class="drop" id="drop">
-      <div class="big">拖拽图片到这里，或点击选择文件</div>
-      <div class="small">支持 png / jpg / webp / gif / bmp，可多选</div>
-    </div>
-    <input type="file" id="file" accept="image/*" multiple hidden>
-    <div class="row">
-      <select id="fmt">
-        <option value="image/png">PNG</option>
-        <option value="image/jpeg" selected>JPG</option>
-        <option value="image/webp">WEBP</option>
-        <option value="image/avif">AVIF</option>
-        <option value="image/bmp">BMP</option>
-        <option value="image/gif">GIF</option>
-      </select>
-      <select id="quality">
-        <option value="0.95">质量 95</option>
-        <option value="0.85" selected>质量 85</option>
-        <option value="0.70">质量 70</option>
-        <option value="0.50">质量 50</option>
-      </select>
-      <button id="go" disabled>开始转换</button>
-    </div>
-    <div class="status" id="status">等待选择图片…</div>
-    <div class="preview" id="preview"></div>
-    <p class="note">说明：转换完全在浏览器本地完成（Canvas API），图片不会上传到任何服务器；PNG/BMP 为无损格式，质量参数仅对 JPG/WEBP 生效。</p>
-  </div>
-
   <!-- 运作原理 -->
   <div class="section">
     <h2><span class="t">⚙️</span> 完整运作原理</h2>
     <ul>
       <li><b>bluetooth-link</b>：<code>socket.AF_BLUETOOTH + BTPROTO_RFCOMM</code> 建立 RFCOMM 通道 → 自定义帧协议（魔数 <code>BL</code> + 版本 + 类型 + 长度头）→ 文本 UTF-8 即时收发 / 文件按帧传输 → 接收端自动存入 <code>received/</code>。</li>
       <li><b>mouse-format-lite</b>：Pillow 处理图片、PyMuPDF 处理 PDF、imageio-ffmpeg 内嵌 FFmpeg 处理音视频、python-docx/openpyxl 处理 Office；CLI 与 WebUI（http.server + multipart 解析）共用同一转换核心。</li>
-      <li><b>本页转换</b>：<code>FileReader</code> 读入 → <code>Image</code> 解码 → <code>canvas.toBlob(mime, quality)</code> 编码 → <code>URL.createObjectURL</code> 预览并下载，全程零上传。</li>
+      <li><b>本页转换</b>：图片类走 <code>FileReader → Image → canvas.toBlob</code> 本地编码，全程零上传；其他格式走云端转换服务 <code>POST /convert</code>，结果通过 <code>/download</code> 链接下载。</li>
     </ul>
   </div>
 
-  <footer>Marvis · 理性小马专业高效版 · 数据只在本地流转 <span>◆</span> 2026-08-28</footer>
+  <!-- 项目链接与完整体验地址 -->
+  <div class="section" id="links">
+    <h2><span class="t">🔗</span> 项目链接与完整体验地址</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>GitHub 项目仓库</h3>
+        <div class="link-line"><b>bluetooth-link</b>：<a href="https://github.com/laihainb666/bluetooth-link" target="_blank">https://github.com/laihainb666/bluetooth-link</a></div>
+        <div class="link-line"><b>mouse-format-lite</b>：<a href="https://github.com/laihainb666/mouse-format-lite" target="_blank">https://github.com/laihainb666/mouse-format-lite</a></div>
+        <div class="link-line"><b>marvis-tools-html</b>：<a href="https://github.com/laihainb666/marvis-tools-html" target="_blank">https://github.com/laihainb666/marvis-tools-html</a></div>
+      </div>
+      <div class="card">
+        <h3>完整体验地址</h3>
+        <p>在线转换服务（全部格式可用，网页版即本页工具的后端）：</p>
+        <a class="big-link" href="https://ywfdn-81-69-228-18.run.pinggy-free.link" target="_blank">https://ywfdn-81-69-228-18.run.pinggy-free.link</a>
+        <p style="margin-top:10px">打开后即可体验图片 / PDF / Office / 文本 / 电子书 / ZIP / 音视频全部格式互转；首次访问如出现 pinggy 提示页，点击 <code>Enter site</code> 即可进入。该地址为云端演示实例，若失效可在本地运行 <code>python3 webui.py</code> 自行启动服务。</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>Marvis · 理性小马专业高效版 · 图片本地转换零上传，云端转换走隧道服务 <span>◆</span> 2026-08-28</footer>
 </div>
 
 <script>
 (function(){
   const drop=document.getElementById('drop'), file=document.getElementById('file'),
-        fmt=document.getElementById('fmt'), quality=document.getElementById('quality'),
-        go=document.getElementById('go'), status=document.getElementById('status'),
-        preview=document.getElementById('preview');
+        fmt=document.getElementById('fmt'), go=document.getElementById('go'),
+        status=document.getElementById('status'), preview=document.getElementById('preview'),
+        apiInput=document.getElementById('apiBase'), noteLine=document.getElementById('noteLine');
   let files=[];
+
+  // 云端服务地址：页面本身从隧道打开则同源，否则用默认公网演示地址
+  const DEFAULT_API = location.hostname.indexOf('pinggy-free.link')>=0 ? '' : 'https://ywfdn-81-69-228-18.run.pinggy-free.link';
+  apiInput.value = DEFAULT_API;
+  function apiBase(){ return apiInput.value.trim().replace(/\/+$/,''); }
+
+  // 格式映射（对齐 mouse-format-lite 后端能力）
+  const FORMATS = {
+    image: { local:['jpg','png','webp','avif','bmp','gif'], remote:['pdf','zip','ico','tiff'] },
+    video: { remote:['gif','mp3','wav','flac','m4a','aac','ogg','opus','wma'] },
+    audio: { remote:['mp3','wav','flac','m4a','aac','ogg','opus','wma'] },
+    pdf:   { remote:['txt','docx','xlsx','html','png','jpg','jpeg','webp','bmp','split'] },
+    text:  { remote:['md','txt','html','pdf','docx','epub'] },
+    ebook: { remote:['txt','md'] },
+    doc:   { remote:['md','txt','html','pdf'] },
+    xls:   { remote:['csv','md','txt','html','pdf'] },
+    ppt:   { remote:['md','txt','html','pdf'] },
+    zip:   { remote:['pdf'] },
+    other: { remote:['zip'] }
+  };
+  const TYPE_NAME = { image:'图片', video:'视频', audio:'音频', pdf:'PDF', text:'文本', ebook:'电子书', doc:'Word', xls:'Excel', ppt:'PPT', zip:'ZIP', other:'文件' };
+
+  function detectType(name){
+    const ext=name.split('.').pop().toLowerCase();
+    if(/^(jpg|jpeg|png|webp|avif|bmp|gif|tif|tiff|ico|tga|heic|heif)$/.test(ext)) return 'image';
+    if(/^(mp4|mkv|avi|mov|wmv|flv|webm|m4v|mpg|mpeg|3gp|ts)$/.test(ext)) return 'video';
+    if(/^(mp3|wav|flac|m4a|aac|ogg|opus|wma)$/.test(ext)) return 'audio';
+    if(ext==='pdf') return 'pdf';
+    if(/^(md|markdown|txt|log|html|htm|json|csv|xml|yaml|yml)$/.test(ext)) return 'text';
+    if(/^(epub|mobi)$/.test(ext)) return 'ebook';
+    if(ext==='docx') return 'doc';
+    if(/^(xlsx|xlsm)$/.test(ext)) return 'xls';
+    if(ext==='pptx') return 'ppt';
+    if(ext==='zip') return 'zip';
+    return 'other';
+  }
 
   drop.onclick=()=>file.click();
   drop.ondragover=e=>{e.preventDefault();drop.classList.add('drag');};
@@ -131,40 +184,104 @@
   file.onchange=()=>setFiles(file.files);
 
   function setFiles(list){
-    files=[...list].filter(f=>f.type.startsWith('image/'));
-    if(!files.length){status.textContent='未检测到有效图片';go.disabled=true;return;}
-    status.textContent=`已选择 ${files.length} 张图片`;
+    files=[...list];
+    if(!files.length){status.textContent='未选择文件';go.disabled=true;return;}
+    const type=detectType(files[0].name);
+    fillFormats(type);
+    status.textContent=`已选择 ${files.length} 个文件，首个文件类型：${TYPE_NAME[type]}`;
     go.disabled=false;
     showPreview();
+    updateNote(type);
+  }
+
+  function fillFormats(type){
+    fmt.innerHTML='';
+    const def=FORMATS[type]||FORMATS.other;
+    if(def.local && def.local.length){
+      const g=document.createElement('optgroup'); g.label='本地转换（浏览器内，零上传）';
+      def.local.forEach(t=>{ const o=document.createElement('option'); o.value='local:'+t; o.textContent=t.toUpperCase(); g.appendChild(o); });
+      fmt.appendChild(g);
+    }
+    if(def.remote && def.remote.length){
+      const g=document.createElement('optgroup'); g.label='云端转换（需下方服务地址可用）';
+      def.remote.forEach(t=>{ const o=document.createElement('option'); o.value='remote:'+t; o.textContent=t.toUpperCase(); g.appendChild(o); });
+      fmt.appendChild(g);
+    }
+  }
+
+  function updateNote(type){
+    const def=FORMATS[type]||FORMATS.other;
+    const parts=[];
+    if(def.local&&def.local.length) parts.push('本地转换：'+def.local.join('/'));
+    if(def.remote&&def.remote.length) parts.push('云端转换：'+def.remote.join('/'));
+    noteLine.textContent='当前类型可转换：'+parts.join('　|　')+'　·　一次处理一个文件，多文件合并请使用下方完整体验地址。';
   }
 
   function showPreview(){
     preview.innerHTML='';
     files.forEach((f,i)=>{
-      const url=URL.createObjectURL(f);
       const box=document.createElement('div');box.className='box';
-      const img=document.createElement('img');img.src=url;
       const cap=document.createElement('div');cap.className='cap';
       cap.textContent=`${i+1}. ${f.name}（${(f.size/1024).toFixed(1)} KB）`;
-      box.append(img,cap);preview.appendChild(box);
+      if(f.type.startsWith('image/')){
+        const url=URL.createObjectURL(f);
+        const img=document.createElement('img');img.src=url;
+        box.appendChild(img);
+      }
+      box.appendChild(cap);preview.appendChild(box);
     });
   }
 
   go.onclick=async()=>{
-    const mime=fmt.value, q=parseFloat(quality.value);
-    status.textContent='转换中…';
-    let ok=0;
-    for(const f of files){
-      try{
-        const dataUrl=await fileToDataUrl(f);
-        const blob=await convert(dataUrl,mime,q,f.name);
-        download(blob, f.name.replace(/\.[^.]+$/,'')+'.'+mime.split('/')[1]);
-        ok++;
-      }catch(e){ console.error(e); }
-    }
-    status.textContent=ok===files.length?`转换完成，已下载 ${ok} 个文件`:`完成 ${ok}/${files.length}，部分失败`;
-    if(ok) showPreview();
+    const f=files[0];
+    if(!f) return;
+    const [mode,target]=fmt.value.split(':');
+    if(mode==='local'){ await localConvert(f,target); return; }
+    await remoteConvert(f,target);
   };
+
+  async function localConvert(f,target){
+    status.textContent='本地转换中…';
+    try{
+      const dataUrl=await fileToDataUrl(f);
+      const blob=await canvasConvert(dataUrl,'image/'+(target==='jpg'?'jpeg':target),0.92,f.name);
+      download(blob, f.name.replace(/\.[^.]+$/,'')+'.'+target);
+      status.textContent='转换完成，已开始下载';
+    }catch(e){ status.textContent='转换失败：'+e.message; status.className='status err'; }
+  }
+
+  async function remoteConvert(f,target){
+    const base=apiBase();
+    if(!base){ status.textContent='请先填写云端服务地址'; status.className='status err'; return; }
+    status.textContent='上传转换中…';
+    try{
+      const fd=new FormData();
+      fd.append('files', f);
+      fd.append('target', target);
+      const resp=await fetch(base+'/convert', {method:'POST', body:fd, headers:{'bypass-tunnel-reminder':'1'}});
+      const html=await resp.text();
+      const re=/href="\/download\?file=([^"]+)"/g;
+      let m, names=[];
+      while((m=re.exec(html))){ try{names.push(decodeURIComponent(m[1]));}catch(e){names.push(m[1]);} }
+      if(names.length){
+        status.textContent='转换完成，正在下载…';
+        names.forEach(n=>{
+          const a=document.createElement('a');
+          a.href=base+'/download?file='+encodeURIComponent(n);
+          a.download=n; a.target='_blank';
+          document.body.appendChild(a); a.click(); a.remove();
+        });
+        status.textContent=`转换完成，共 ${names.length} 个结果文件（已开始下载）`;
+        status.className='status';
+      }else{
+        const errM=html.match(/<div class='msg err'>([\s\S]*?)<\/div>/);
+        throw new Error(errM?errM[1].replace(/<[^>]+>/g,''):'转换失败，请确认云端服务地址可用');
+      }
+    }catch(e){
+      status.textContent='云端转换失败：'+e.message;
+      status.className='status err';
+    }
+  }
 
   function fileToDataUrl(f){
     return new Promise((res,rej)=>{
@@ -173,7 +290,7 @@
     });
   }
 
-  function convert(dataUrl,mime,quality,name){
+  function canvasConvert(dataUrl,mime,quality,name){
     return new Promise((res,rej)=>{
       const img=new Image();
       img.onload=()=>{
